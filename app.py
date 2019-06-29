@@ -27,7 +27,6 @@ def isFollow(follower, followee):
         pass
 
 def FollowingCheckInJapanese(followflag):
-    print(followflag)
     if followflag == 1:
         return "います"
     return "いません"
