@@ -38,9 +38,5 @@ def index():
     else:
         return render_template('index.html', form = form)
 
-@app.route('/hello')
-def hello():
-    return render_template('hello.html', name='User')
-
 if __name__ == '__main__':
     app.run(debug=True)
