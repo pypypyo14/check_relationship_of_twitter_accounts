@@ -13,8 +13,10 @@
 {% endwith %}
 
 <form method="POST" action="/">
-    <div>{{ form.user_id_1.label }}: {{ form.user_id_1 }}</div>
-    <div>{{ form.user_id_2.label }}: {{ form.user_id_2 }}</div>
-    <div>{{ form.submit }}</div>
+    <div>{{ form.user_id_1.label }}: @{{ form.user_id_1(class="input-group-text") }}
+    </div>
+    <div>{{ form.user_id_2.label }}: @{{ form.user_id_2(class="input-group-text") }}
+    </div>
+    <div>{{ form.submit(class="btn btn-info") }}</div>
 </form>
 {% endblock %}

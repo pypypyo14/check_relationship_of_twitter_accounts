@@ -11,8 +11,8 @@ bootstrap = Bootstrap(app)
 app.config['SECRET_KEY'] = os.urandom(32)
 
 class TwitterUserAccount(FlaskForm):
-    user_id_1 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "@username"})
-    user_id_2 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "@username"})
+    user_id_1 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "username"})
+    user_id_2 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "username"})
     submit = SubmitField('Submit')
 
 class TwitterAccount:
