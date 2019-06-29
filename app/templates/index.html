@@ -3,6 +3,7 @@
 {% block title %}Hello{% endblock %}
 
 {% block content %}
+
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
@@ -18,4 +19,11 @@
     </div>
     <div>{{ form.submit(class="btn btn-info") }}</div>
 </form>
+
+{% if results %}
+{% for result in results %}
+<li>{{ result }}</li>
+{% endfor %}
+{% endif %}
+
 {% endblock %}
