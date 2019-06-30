@@ -11,10 +11,10 @@ $ virtualenv .
 
 $ pip install -r requirements.txt
 
-`config.py` を作成してTwitterAPIkeyを配置
+direnvなどで環境変数にTwitterAPIkeyを配置
 ```
-CONSUMER_KEY = "**************"
-CONSUMER_SECRET = "**************"
-ACCESS_TOKEN = "**************"
-ACCESS_TOKEN_SECRET = "**************"
+export CONSUMER_KEY="**************"
+export CONSUMER_SECRET="**************"
+export ACCESS_TOKEN="**************"
+export ACCESS_TOKEN_SECRET="**************"
 ```
