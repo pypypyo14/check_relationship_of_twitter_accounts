@@ -1,4 +1,4 @@
-import os, json, config
+import os, json
 from flask import Flask, render_template, request, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
@@ -10,10 +10,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 bootstrap = Bootstrap(app)
 
-CK = config.CONSUMER_KEY
-CS = config.CONSUMER_SECRET
-AT = config.ACCESS_TOKEN
-ATS = config.ACCESS_TOKEN_SECRET
+CK = os.environ["CONSUMER_KEY"]
+CS = os.environ["CONSUMER_SECRET"]
+AT = os.environ["ACCESS_TOKEN"]
+ATS = os.environ["ACCESS_TOKEN_SECRET"]
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
 class TwitterUserAccountForm(FlaskForm):
@@ -80,7 +80,7 @@ def index():
         else:
             followflags = FollowingCheck(user_id_1, user_id_2)
             message1 = "@" + user_id_1 + " は @" + user_id_2 + " をフォローして" + FollowingCheckInJapanese(followflags['user_id_1'])
-            message2 = "@" + user_id_2 +  "は @" + user_id_1 + " をフォローして" + FollowingCheckInJapanese(followflags['user_id_2'])
+            message2 = "@" + user_id_2 + " は @" + user_id_1 + " をフォローして" + FollowingCheckInJapanese(followflags['user_id_2'])
             return render_template('index.html', form = form, results = [message1, message2])
     else:
         return render_template('index.html', form = form)
