@@ -1,5 +1,5 @@
 import os, json
-from flask import Flask, render_template, request, flash, redirect
+from flask import Flask, render_template, request, flash, redirect, session
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
@@ -78,6 +78,13 @@ def ValidateUserIds(user_id_1, user_id_2):
     elif (not isPublicAccount(user_id_1)) and (not isPublicAccount(user_id_2)):
         return "どちらも鍵垢さんのようです"
 
+def lender_result(user_id_1, user_id_2):
+    form        = TwitterUserAccountForm(request.form)
+    followflags = FollowingCheck(user_id_1, user_id_2)
+    message1 = "@" + user_id_1 + " は @" + user_id_2 + " を" + FollowingCheckInJapanese(followflags['user_id_1'])
+    message2 = "@" + user_id_2 + " は @" + user_id_1 + " を" + FollowingCheckInJapanese(followflags['user_id_2'])
+    return render_template('index.html', form = form, results = [message1, message2])
+
 @app.route('/', methods = ["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
@@ -89,12 +96,15 @@ def index():
             flash (validate_result, 'alert alert-danger')
             return render_template('index.html', form = form)
         else:
-            followflags = FollowingCheck(user_id_1, user_id_2)
-            message1 = "@" + user_id_1 + " は @" + user_id_2 + " を" + FollowingCheckInJapanese(followflags['user_id_1'])
-            message2 = "@" + user_id_2 + " は @" + user_id_1 + " を" + FollowingCheckInJapanese(followflags['user_id_2'])
-            return render_template('index.html', form = form, results = [message1, message2])
+            lender_result(user_id_1, user_id_2)
     else:
         return render_template('index.html', form = form)
+
+@app.route('/<parameters>', methods = ["GET"])
+def logined(parameters):
+    form = TwitterUserAccountForm(request.form)
+    print(parameters)
+    return render_template('index.html', form = form)
 
 @app.route('/login', methods = ["GET"])
 def login():
