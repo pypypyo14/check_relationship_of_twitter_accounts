@@ -10,12 +10,12 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 bootstrap = Bootstrap(app)
 
-# 非鍵垢でのTwitterAPI利用
+# ログインなしで利用する場合のTwitterAPI用トークン
 CK = os.environ["CONSUMER_KEY"]
 CS = os.environ["CONSUMER_SECRET"]
 AT = os.environ["ACCESS_TOKEN"]
 ATS = os.environ["ACCESS_TOKEN_SECRET"]
-twitter = OAuth1Session(CK, CS, AT, ATS)
+twitter_session = None
 
 # URLs
 base_url = 'https://api.twitter.com/'
@@ -46,7 +46,7 @@ def FollowingCheck(user_id_1, user_id_2):
 def isPublicAccount(user_id):
     endpoint = base_json_url.format('statuses/user_timeline')
     params = "screen_name=" + user_id +"&count=1"
-    res = twitter.get(endpoint, params = params)
+    res = twitter_session.get(endpoint, params = params)
     response = json.loads(res.text)
     if ("error" in response):
         return False
@@ -55,7 +55,7 @@ def isPublicAccount(user_id):
 def isFollow(user_id_1, user_id_2):
     endpoint = base_json_url.format('friendships/show')
     params = "source_screen_name="+user_id_1+"&target_screen_name="+user_id_2
-    res = twitter.get(endpoint, params = params)
+    res = twitter_session.get(endpoint, params = params)
     response = json.loads(res.text)
     is_user1_following = response['relationship']['source']['following']
     is_user2_following = response['relationship']['target']['following']
@@ -76,18 +76,25 @@ def ValidateUserIds(user_id_1, user_id_2):
     if isSameTwitterAccount(user_id_1, user_id_2):
         return "異なるユーザー同士を入力してください"
     elif (not isPublicAccount(user_id_1)) and (not isPublicAccount(user_id_2)):
-        return "どちらも鍵垢さんのようです"
+        return "確認できませんでした（どちらかのアカウントにログインしてください）"
 
-def lender_result(user_id_1, user_id_2):
-    form        = TwitterUserAccountForm(request.form)
+def check_result(user_id_1, user_id_2):
     followflags = FollowingCheck(user_id_1, user_id_2)
     message1 = "@" + user_id_1 + " は @" + user_id_2 + " を" + FollowingCheckInJapanese(followflags['user_id_1'])
     message2 = "@" + user_id_2 + " は @" + user_id_1 + " を" + FollowingCheckInJapanese(followflags['user_id_2'])
-    return render_template('index.html', form = form, results = [message1, message2])
+    return message1, message2
+
+def setTwitterSession(oauth_token, oauth_verifier):
+    global twitter_session
+    twitter_session = OAuth1Session(CK, CS, oauth_token, oauth_verifier)
 
 @app.route('/', methods = ["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
+    # リクエストパラメータの確認(ログイン後であればパラメータが設定されている)
+    oauth_token = request.args.get('oauth_token', default = AT)
+    oauth_verifier = request.args.get('oauth_verifier', default = ATS)
+    setTwitterSession(oauth_token, oauth_verifier)
     if request.method == 'POST':
         user_id_1 = request.form['user_id_1']
         user_id_2 = request.form['user_id_2']
@@ -96,15 +103,10 @@ def index():
             flash (validate_result, 'alert alert-danger')
             return render_template('index.html', form = form)
         else:
-            lender_result(user_id_1, user_id_2)
+            message1, message2 = check_result(user_id_1, user_id_2)
+            return render_template('index.html', form = form, results = [message1, message2])
     else:
         return render_template('index.html', form = form)
-
-@app.route('/<parameters>', methods = ["GET"])
-def logined(parameters):
-    form = TwitterUserAccountForm(request.form)
-    print(parameters)
-    return render_template('index.html', form = form)
 
 @app.route('/login', methods = ["GET"])
 def login():
