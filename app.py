@@ -1,5 +1,5 @@
 import os, json
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, redirect
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 bootstrap = Bootstrap(app)
 
-# TwitterAPIの利用
+# 非鍵垢でのTwitterAPI利用
 CK = os.environ["CONSUMER_KEY"]
 CS = os.environ["CONSUMER_SECRET"]
 AT = os.environ["ACCESS_TOKEN"]
@@ -21,7 +21,7 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 base_url = 'https://api.twitter.com/'
 base_json_url = base_url + '1.1/{}.json'
 request_token_url = base_url + 'oauth/request_token'
-authenticate_url = base_url + 'oauth/authenticate'
+authorization_url = base_url + 'oauth/authenticate'
 access_token_url = base_url + 'oauth/access_token'
 oauth_callback = "https://checkrelationshipoftwitteruser.herokuapp.com/"
 
@@ -95,6 +95,22 @@ def index():
             return render_template('index.html', form = form, results = [message1, message2])
     else:
         return render_template('index.html', form = form)
+
+@app.route('/login', methods = ["GET"])
+def login():
+    # get access_token
+    twitter = OAuth1Session(CK, CS)
+    twitter.fetch_request_token(request_token_url)
+    # redirext to url
+    auth_url = twitter.authorization_url(authorization_url)
+    return redirect(auth_url)
+
+@app.route('/logout', methods = ["GET"])
+def logout():
+    # まだ具体的な処理は入れてない
+    form = TwitterUserAccountForm(request.form)
+    flash (u'ログアウトしました', 'alert alert-success')
+    return render_template('index.html', form = form)
 
 if __name__ == '__main__':
     app.run(debug=True)
