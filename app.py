@@ -48,7 +48,6 @@ def isPublicAccount(user_id):
     params = "screen_name=" + user_id +"&count=1"
     res = twitter.get(endpoint, params = params)
     response = json.loads(res.text)
-    print(response)
     if ("error" in response):
         return False
     return True
@@ -73,17 +72,21 @@ def isSameTwitterAccount(user_id_1, user_id_2):
     else:
         return False
 
+def ValidateUserIds(user_id_1, user_id_2):
+    if isSameTwitterAccount(user_id_1, user_id_2):
+        return "異なるユーザー同士を入力してください"
+    elif (not isPublicAccount(user_id_1)) and (not isPublicAccount(user_id_2)):
+        return "どちらも鍵垢さんのようです"
+
 @app.route('/', methods = ["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
     if request.method == 'POST':
         user_id_1 = request.form['user_id_1']
         user_id_2 = request.form['user_id_2']
-        if isSameTwitterAccount(user_id_1, user_id_2):
-            flash(u'異なるユーザー同士を入力してください', 'alert alert-danger')
-            return render_template('index.html', form = form)
-        if (not isPublicAccount(user_id_1)) and (not isPublicAccount(user_id_2)):
-            flash(u'どちらも鍵垢さんのようです', 'alert alert-danger')
+        validate_result = ValidateUserIds(user_id_1, user_id_2)
+        if validate_result is not None:
+            flash (validate_result, 'alert alert-danger')
             return render_template('index.html', form = form)
         else:
             followflags = FollowingCheck(user_id_1, user_id_2)
