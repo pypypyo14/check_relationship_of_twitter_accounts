@@ -90,11 +90,9 @@ def setTwitterSession(oauth_token, oauth_verifier):
 @app.route('/', methods = ["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
-    if oauth_token == None:
-        # リクエストパラメータの確認(ログイン後であればパラメータが設定されている)
-        oauth_token = request.args.get('oauth_token', default = AT)
-        oauth_verifier = request.args.get('oauth_verifier', default = ATS)
-        twitter_session = setTwitterSession(oauth_token, oauth_verifier)
+    oauth_token = request.args.get('oauth_token', default = AT)
+    oauth_verifier = request.args.get('oauth_verifier', default = ATS)
+    twitter_session = setTwitterSession(oauth_token, oauth_verifier)
     if request.method == 'POST':
         user_id_1 = request.form['user_id_1']
         user_id_2 = request.form['user_id_2']
