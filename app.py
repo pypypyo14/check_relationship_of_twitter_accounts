@@ -10,12 +10,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 bootstrap = Bootstrap(app)
 
+# TwitterAPIの利用
 CK = os.environ["CONSUMER_KEY"]
 CS = os.environ["CONSUMER_SECRET"]
 AT = os.environ["ACCESS_TOKEN"]
 ATS = os.environ["ACCESS_TOKEN_SECRET"]
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
+# URLs
 base_url = 'https://api.twitter.com/'
 base_json_url = base_url + '1.1/{}.json'
 request_token_url = base_url + 'oauth/request_token'
@@ -56,15 +58,14 @@ def isFollow(user_id_1, user_id_2):
     params = "source_screen_name="+user_id_1+"&target_screen_name="+user_id_2
     res = twitter.get(endpoint, params = params)
     response = json.loads(res.text)
-    print(response)
     is_user1_following = response['relationship']['source']['following']
     is_user2_following = response['relationship']['target']['following']
-    return is_user1_following, is_user2_following
+    return is_user1_following, is_user2_following # boolean
 
 def FollowingCheckInJapanese(followflag):
     if followflag == True:
-        return "います"
-    return "いません"
+        return "フォローしています"
+    return "フォローしていません"
 
 def isSameTwitterAccount(user_id_1, user_id_2):
     if user_id_1 == user_id_2:
@@ -86,8 +87,8 @@ def index():
             return render_template('index.html', form = form)
         else:
             followflags = FollowingCheck(user_id_1, user_id_2)
-            message1 = "@" + user_id_1 + " は @" + user_id_2 + " をフォローして" + FollowingCheckInJapanese(followflags['user_id_1'])
-            message2 = "@" + user_id_2 + " は @" + user_id_1 + " をフォローして" + FollowingCheckInJapanese(followflags['user_id_2'])
+            message1 = "@" + user_id_1 + " は @" + user_id_2 + " を" + FollowingCheckInJapanese(followflags['user_id_1'])
+            message2 = "@" + user_id_2 + " は @" + user_id_1 + " を" + FollowingCheckInJapanese(followflags['user_id_2'])
             return render_template('index.html', form = form, results = [message1, message2])
     else:
         return render_template('index.html', form = form)
