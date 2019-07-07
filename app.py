@@ -16,6 +16,13 @@ AT = os.environ["ACCESS_TOKEN"]
 ATS = os.environ["ACCESS_TOKEN_SECRET"]
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
+base_url = 'https://api.twitter.com/'
+base_json_url = base_url + '1.1/{}.json'
+request_token_url = base_url + 'oauth/request_token'
+authenticate_url = base_url + 'oauth/authenticate'
+access_token_url = base_url + 'oauth/access_token'
+oauth_callback = "https://checkrelationshipoftwitteruser.herokuapp.com/"
+
 class TwitterUserAccountForm(FlaskForm):
     user_id_1 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "username"})
     user_id_2 = StringField('ID', validators=[DataRequired()], render_kw={"placeholder": "username"})
@@ -35,7 +42,7 @@ def FollowingCheck(user_id_1, user_id_2):
         return followflags
 
 def isPublicAccount(user_id):
-    endpoint = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+    endpoint = base_json_url.format('statuses/user_timeline')
     params = "screen_name=" + user_id +"&count=1"
     res = twitter.get(endpoint, params = params)
     response = json.loads(res.text)
@@ -45,7 +52,7 @@ def isPublicAccount(user_id):
     return True
 
 def isFollow(user_id_1, user_id_2):
-    endpoint = "https://api.twitter.com/1.1/friendships/show.json"
+    endpoint = base_json_url.format('friendships/show')
     params = "source_screen_name="+user_id_1+"&target_screen_name="+user_id_2
     res = twitter.get(endpoint, params = params)
     response = json.loads(res.text)
