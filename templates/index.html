@@ -3,7 +3,7 @@
 {% block title %}Twitterアカウント同士のフォロー関係をチェックします{% endblock %}
 
 {% block content %}
-
+<!-- Flash Message -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
@@ -11,7 +11,10 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-両方鍵垢の場合はうごきません
+
+<!-- default body -->
+<a href="/login">Sign in with Twitter</a>
+
 <form method="POST" action="/">
     <div>{{ form.user_id_1.label }}: @{{ form.user_id_1(class="input-group-text") }}
     </div>
@@ -20,6 +23,7 @@
     <div>{{ form.submit(class="btn btn-info") }}</div>
 </form>
 
+<!-- result-->
 {% if results %}
 {% for result in results %}
 <li>{{ result }}</li>
