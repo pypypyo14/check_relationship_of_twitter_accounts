@@ -100,6 +100,12 @@ def index():
     else:
         return render_template('index.html', form = form)
 
+@app.route('/<parameters>', methods = ["GET"])
+def logined(parameters):
+    form = TwitterUserAccountForm(request.form)
+    print(parameters)
+    return render_template('index.html', form = form)
+
 @app.route('/login', methods = ["GET"])
 def login():
     # get access_token
