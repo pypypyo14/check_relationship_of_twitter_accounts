@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request, flash, redirect, session
+from flask import Flask, render_template, request, flash, redirect, make_response
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
@@ -23,7 +23,6 @@ base_json_url = base_url + '1.1/{}.json'
 request_token_url = base_url + 'oauth/request_token'
 authorization_url = base_url + 'oauth/authenticate'
 access_token_url = base_url + 'oauth/access_token'
-oauth_callback = "https://checkrelationshipoftwitteruser.herokuapp.com/"
 
 
 class TwitterUserAccountForm(FlaskForm):
@@ -98,11 +97,9 @@ def check_result(user_id_1, user_id_2, twitter_session):
 
 
 def setTwitterSession():
-    if session.get('oauth_token') != None:
-        twitter_session = OAuth1Session(
-            CK, CS, session.get('oauth_token'), session.get('oauth_verifier'))
-    else:
-        twitter_session = OAuth1Session(CK, CS, AT, ATS)
+    access_token = request.cookies.get('oauth_token', AT)
+    access_token_secret = request.cookies.get('oauth_token_secret', ATS)
+    twitter_session = OAuth1Session(CK, CS, access_token, access_token_secret)
     return twitter_session
 
 
@@ -128,20 +125,29 @@ def index():
 
 @app.route('/login', methods=["GET"])
 def login():
-    # get access_token
     twitter = OAuth1Session(CK, CS)
     twitter.fetch_request_token(request_token_url)
-    # redirext to url
     auth_url = twitter.authorization_url(authorization_url)
     return redirect(auth_url)
 
 
 @app.route('/callback', methods=["GET"])
 def callback():
-    session['oauth_token'] = request.args.get('oauth_token', default=None)
-    session['oauth_verifier'] = request.args.get(
-        'oauth_verifier', default=None)
-    return redirect('/')
+    # アクセストークンをTwitterから取得
+    redirect_response = request.url
+    twitter = OAuth1Session(CK, CS)
+    twitter.parse_authorization_response(redirect_response)
+    res = twitter.fetch_access_token(access_token_url)
+
+    # アクセストークンを取り出す
+    loginuser_access_token = res.get('oauth_token')
+    loginuser_access_token_secret = res.get('oauth_token_secret')
+
+    # トークンをcookieにセットしてrootパスにリダイレクト
+    redirect_to_index = app.make_response(redirect('/'))
+    redirect_to_index.set_cookie('oauth_token', value = loginuser_access_token)
+    redirect_to_index.set_cookie('oauth_token_secret', value = loginuser_access_token_secret)
+    return redirect_to_index
 
 
 @app.route('/logout', methods=["GET"])
