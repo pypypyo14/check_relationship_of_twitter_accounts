@@ -97,17 +97,19 @@ def check_result(user_id_1, user_id_2, twitter_session):
     return message1, message2
 
 
-def setTwitterSession(oauth_token, oauth_verifier):
-    twitter_session = OAuth1Session(CK, CS, oauth_token, oauth_verifier)
+def setTwitterSession():
+    if session.get('oauth_token') != None:
+        twitter_session = OAuth1Session(
+            CK, CS, session.get('oauth_token'), session.get('oauth_verifier'))
+    else:
+        twitter_session = OAuth1Session(CK, CS, AT, ATS)
     return twitter_session
 
 
 @app.route('/', methods=["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
-    oauth_token = request.args.get('oauth_token', default=AT)
-    oauth_verifier = request.args.get('oauth_verifier', default=ATS)
-    twitter_session = setTwitterSession(oauth_token, oauth_verifier)
+    twitter_session = setTwitterSession()
     if request.method == 'POST':
         user_id_1 = request.form['user_id_1']
         user_id_2 = request.form['user_id_2']
@@ -132,6 +134,14 @@ def login():
     # redirext to url
     auth_url = twitter.authorization_url(authorization_url)
     return redirect(auth_url)
+
+
+@app.route('/callback', methods=["GET"])
+def callback():
+    session['oauth_token'] = request.args.get('oauth_token', default=None)
+    session['oauth_verifier'] = request.args.get(
+        'oauth_verifier', default=None)
+    return redirect('/')
 
 
 @app.route('/logout', methods=["GET"])
