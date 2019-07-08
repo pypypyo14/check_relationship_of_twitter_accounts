@@ -103,6 +103,13 @@ def setTwitterSession():
     return twitter_session
 
 
+def isLogin():
+    if request.cookies.get('oauth_token') != None:
+        return True
+    else:
+        return False
+
+
 @app.route('/', methods=["GET", "POST"])
 def index():
     form = TwitterUserAccountForm(request.form)
@@ -114,13 +121,13 @@ def index():
             user_id_1, user_id_2, twitter_session)
         if validate_result is not None:
             flash(validate_result, 'alert alert-danger')
-            return render_template('index.html', form=form)
+            return render_template('index.html', form=form, isLogin=isLogin())
         else:
             message1, message2 = check_result(
                 user_id_1, user_id_2, twitter_session)
-            return render_template('index.html', form=form, results=[message1, message2])
+            return render_template('index.html', form=form, results=[message1, message2], isLogin=isLogin())
     else:
-        return render_template('index.html', form=form)
+        return render_template('index.html', form=form, isLogin=isLogin())
 
 
 @app.route('/login', methods=["GET"])
@@ -153,9 +160,12 @@ def callback():
 @app.route('/logout', methods=["GET"])
 def logout():
     redirect_to_index = app.make_response(redirect('/'))
-    redirect_to_index.set_cookie('oauth_token', value = "", max_age=0)
-    redirect_to_index.set_cookie('oauth_token_secret', value = "", max_age=0)
-    flash(u'ログアウトしました', 'alert alert-success')
+    if isLogin():
+        redirect_to_index.set_cookie('oauth_token', value = "", max_age=0)
+        redirect_to_index.set_cookie('oauth_token_secret', value = "", max_age=0)
+        flash(u'ログアウトしました', 'alert alert-success')
+    else:
+        flash(u'ログインしていません', 'alert alert-success')
     return redirect_to_index
 
 
