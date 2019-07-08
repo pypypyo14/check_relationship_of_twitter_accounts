@@ -152,10 +152,11 @@ def callback():
 
 @app.route('/logout', methods=["GET"])
 def logout():
-    # まだ具体的な処理は入れてない
-    form = TwitterUserAccountForm(request.form)
+    redirect_to_index = app.make_response(redirect('/'))
+    redirect_to_index.set_cookie('oauth_token', value = "", max_age=0)
+    redirect_to_index.set_cookie('oauth_token_secret', value = "", max_age=0)
     flash(u'ログアウトしました', 'alert alert-success')
-    return render_template('index.html', form=form)
+    return redirect_to_index
 
 
 if __name__ == '__main__':
